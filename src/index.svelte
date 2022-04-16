@@ -1,7 +1,7 @@
 <script lang="ts">
   import { writable } from 'svelte/store'
 
-  const webhookURL = writable('')
+  const webhookURL = writable(new URLSearchParams(location.search).get('webhookURL') || '')
   const message = writable('')
 
   const handleSubmit = () => {
