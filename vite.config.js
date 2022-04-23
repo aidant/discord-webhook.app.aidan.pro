@@ -16,4 +16,10 @@ export default defineConfig({
       preprocess: sveltePreprocess(),
     }),
   ],
+  optimizeDeps: {
+    exclude: [
+      '@lazy/oauth2-authorization-code-pkce-client',
+      '@lazy/oauth2-service-worker-vault',
+    ],
+  },
 })
