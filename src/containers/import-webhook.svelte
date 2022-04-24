@@ -18,8 +18,13 @@
     state = 'verifying'
     try {
       const { webhookId, webhookToken } = event.detail
-      await getWebhookWithToken(webhookId, webhookToken)
-      await createWebhook(webhookId, webhookToken)
+      const webhook = await getWebhookWithToken(webhookId, webhookToken)
+      await createWebhook({
+        webhookId: webhook.id,
+        webhookToken: webhook.token,
+        webhookAvatar: webhook.avatar,
+        webhookName: webhook.name,
+      })
       state = 'success'
     } catch (error) {
       technicalDetails = error

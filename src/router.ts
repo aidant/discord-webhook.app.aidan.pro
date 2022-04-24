@@ -1,13 +1,17 @@
+export const pushState = (href: string) => {
+  history.pushState(null, '', href)
+  dispatchEvent(
+    new PopStateEvent('popstate', { bubbles: false, cancelable: false, composed: false })
+  )
+}
+
 class PushStateHTMLAnchorElement extends HTMLAnchorElement {
   #handleClick(event: MouseEvent) {
     if (!this.href) return
     if (this.target === '_blank') return
     if (event.metaKey || event.shiftKey) return
 
-    history.pushState(null, this.title || '', this.href)
-    dispatchEvent(
-      new PopStateEvent('popstate', { bubbles: false, cancelable: false, composed: false })
-    )
+    pushState(this.href)
     event.preventDefault()
   }
 
@@ -30,7 +34,11 @@ export const route = (
   options: RouteOptions,
   callback: (props: {} | null) => void
 ): (() => void) => {
-  const optionsPath = Array.isArray(options.path) ? options.path : [options.path] || []
+  const optionsPath = Array.isArray(options.path)
+    ? options.path
+    : options.path
+    ? [options.path]
+    : []
   const optionsQuery = Array.isArray(options.query)
     ? options.query.map((query) => [query, query])
     : Object.entries(options.query || {})
@@ -76,4 +84,38 @@ export const route = (
 
   addEventListener('popstate', handlePopState)
   return () => removeEventListener('popstate', handlePopState)
+}
+
+export interface RouterOptions {
+  [key: string]: RouteOptions
+}
+
+export const router = (routerOptions: RouterOptions, callback: Function): (() => void) => {
+  const subscriptions = []
+  const result = {}
+
+  let isCallbackQueued = false
+  const queueCallback = () => {
+    if (isCallbackQueued) return
+    isCallbackQueued = true
+    queueMicrotask(() => {
+      callback(result)
+      isCallbackQueued = false
+    })
+  }
+
+  for (const [name, routeOptions] of Object.entries(routerOptions)) {
+    subscriptions.push(
+      route(routeOptions, (props) => {
+        result[name] = props
+        queueCallback()
+      })
+    )
+  }
+
+  return () => {
+    for (const unsubscribe of subscriptions) {
+      unsubscribe()
+    }
+  }
 }

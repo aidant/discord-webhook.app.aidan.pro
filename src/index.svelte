@@ -1,8 +1,25 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import Link from './components/link.svelte'
   import Route from './components/route.svelte'
   import ImportWebhook from './containers/import-webhook.svelte'
   import Webhooks from './pages/webhooks.svelte'
+  import { pushState, router } from './router'
+
+  let routes: Record<string, object> = {}
+  onMount(() =>
+    router(
+      {
+        importWebhook: {
+          query: { 'import-webhook': 'webhookURL' },
+        },
+        listWebhooks: {
+          path: '/app/webhooks',
+        },
+      },
+      (result) => (routes = result)
+    )
+  )
 
   const pages = [
     { href: '/app/editor', textContent: 'Editor' },
@@ -13,10 +30,7 @@
   const handleClose = (query: string) => {
     const url = new URL(location.href)
     url.searchParams.delete(query)
-    history.pushState(null, '', url.href)
-    dispatchEvent(
-      new PopStateEvent('popstate', { bubbles: false, cancelable: false, composed: false })
-    )
+    pushState(url.href)
   }
 </script>
 
@@ -32,12 +46,11 @@
 
 <main>
   <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-    <Route component={Webhooks} path="/app/webhooks" />
-
-    <Route
-      component={ImportWebhook}
-      query={{ 'import-webhook': 'webhookURL' }}
-      on:close={() => handleClose('import-webhook')}
-    />
+    {#if routes.importWebhook}
+      <ImportWebhook {...routes.importWebhook} on:close={() => handleClose('import-webhook')} />
+    {/if}
+    {#if routes.listWebhooks}
+      <Webhooks {...routes.listWebhooks} />
+    {/if}
   </div>
 </main>

@@ -3,6 +3,8 @@ import { openDB as createDatabase, type DBSchema as Schema } from 'idb'
 export interface Webhook {
   webhookId: string
   webhookToken: string
+  webhookAvatar: string
+  webhookName: string
 }
 
 export interface WebhookMessage {
@@ -34,8 +36,8 @@ const database = await createDatabase<DiscordWebhookSchemaV1>('discord-webhook',
   },
 })
 
-export const createWebhook = async (webhookId: string, webhookToken: string): Promise<void> => {
-  await database.put('webhooks', { webhookId, webhookToken })
+export const createWebhook = async (webhook: Webhook): Promise<void> => {
+  await database.put('webhooks', webhook)
 }
 
 export const getWebhook = async (webhookId: string): Promise<Webhook> => {

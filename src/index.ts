@@ -6,10 +6,14 @@ import { SERVICE_WORKER_URL } from './environment'
 import Application from './index.svelte'
 import './style.css'
 
-addEventListener('load', async () => {
-  // await navigator.serviceWorker.register(SERVICE_WORKER_URL, { type: 'module' })
-
+if (document.body instanceof HTMLBodyElement) {
   new Application({
     target: document.body,
   })
-})
+} else {
+  addEventListener('load', () => {
+    new Application({
+      target: document.body,
+    })
+  })
+}

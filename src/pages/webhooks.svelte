@@ -1,4 +1,5 @@
 <script lang="ts">
+  import WebhookPreview from '../containers/webhook-preview.svelte'
   import Link from '../components/link.svelte'
   import { listWebhooks } from '../database'
 
@@ -7,9 +8,9 @@
 
 {#await webhooksPromise then webhooks}
   <ul>
-    {#each webhooks as { webhookId } (webhookId)}
+    {#each webhooks as webhook (webhook.webhookId)}
       <li>
-        <Link href={`/app/webhooks/${webhookId}`}>{webhookId}</Link>
+        <WebhookPreview {webhook} />
       </li>
     {/each}
   </ul>
